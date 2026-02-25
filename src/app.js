@@ -130,6 +130,7 @@ export function mountPOS(root, { storage = localStorage } = {}) {
   function render() {
     const cartDetailed = app.getCartDetailed();
     const totals = computeTotals(cartDetailed, app.state.discountType, app.state.discountValue, app.state.taxRate);
+    const editingItem = editingId ? app.state.items.find((x) => x.id === editingId) : null;
 
     root.innerHTML = `
       <main class="layout">
@@ -138,8 +139,8 @@ export function mountPOS(root, { storage = localStorage } = {}) {
         <section class="card">
           <h2>Item Catalog (CRUD)</h2>
           <form id="item-form">
-            <input id="item-name" placeholder="Item name" required />
-            <input id="item-price" type="number" min="0" step="0.01" placeholder="Unit price" required />
+            <input id="item-name" placeholder="Item name" required value="${editingItem ? editingItem.name : ''}" />
+            <input id="item-price" type="number" min="0" step="0.01" placeholder="Unit price" required value="${editingItem ? editingItem.unitPrice : ''}" />
             <button type="submit">${editingId ? 'Update Item' : 'Add Item'}</button>
             ${editingId ? '<button type="button" id="cancel-edit">Cancel</button>' : ''}
           </form>
@@ -268,11 +269,7 @@ export function mountPOS(root, { storage = localStorage } = {}) {
 
     root.querySelectorAll('button[data-action="edit"]').forEach((btn) => btn.addEventListener('click', () => {
       editingId = btn.dataset.id;
-      const item = app.state.items.find((x) => x.id === editingId);
-      if (item) {
-        root.querySelector('#item-name').value = item.name;
-        root.querySelector('#item-price').value = item.unitPrice;
-      }
+      render();
     }));
 
     root.querySelectorAll('input[data-action="qty"]').forEach((input) => input.addEventListener('change', () => {
